@@ -2,7 +2,7 @@
 
 
 <p align="center">  
-  Student project for the lecture "Deep Learning in Medical Imaging" <br> 
+  Student project for the lecture "Deep Learning in Medical Imaging" by <a href="https://www.informatik.tu-darmstadt.de/gris/startseite_1/team/team_details_60224.de.jsp">Dr. Anirban Mukhopadhyay</a> and <a href="https://www.informatik.tu-darmstadt.de/gris/startseite_1/team/team_details_113408.de.jsp">Henry Krumb</a> <br> 
 </p>
 
 <p align="center">
