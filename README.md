@@ -2,7 +2,7 @@
 
 
 <p align="center">  
-  Student project for the lecture "Deep Learning in Medical Imaging". <br> 
+  Student project for the lecture "Deep Learning in Medical Imaging" <br> 
 </p>
 
 <p align="center">
