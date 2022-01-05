@@ -1,0 +1,1 @@
+from .load_medmnist import load_mnist
