@@ -9,7 +9,7 @@ from utils import load_mnist
 
 # evaluation
 
-def evaluate(model, data_loader, split, data_flag):
+def evaluate(model, data_loader, split, data_flag, dev="cpu"):
     info = INFO[data_flag]
     task = info['task']
 
