@@ -32,6 +32,24 @@ def random_single_pixel_flip_attack(input_image, image_type="grayscale", k=1):
 
 # attack
 
+def explicit_pixel_attack(input_image, pixel_list=[[30, 30], [32, 32]], image_type="grayscale"):
+
+    plot = False
+    if plot:
+        plt.imshow(input_image[0], cmap='gray')
+        plt.show()
+
+    for idx in pixel_list:
+        input_image[0][idx] = 1 - input_image[0][idx]
+
+    if plot:
+        plt.imshow(input_image[0], cmap='gray')
+        plt.show()
+
+    return input_image
+
+
+
 
 
 if __name__ == "__main__":
@@ -52,7 +70,7 @@ if __name__ == "__main__":
         dev = "cuda:0"
     else:
         dev = "cpu"
-    dev = "cpu"
+
     device = torch.device(dev)
 
     data_transform = transforms.Compose([
@@ -63,7 +81,7 @@ if __name__ == "__main__":
     attack_transform = transforms.Compose([
         transforms.Resize(64),
         transforms.ToTensor(),
-        transforms.Lambda(lambda x: random_single_pixel_flip_attack(x)),
+        transforms.Lambda(explicit_pixel_attack),
         transforms.Normalize(mean=[0.5], std=[0.5])
     ])
 
