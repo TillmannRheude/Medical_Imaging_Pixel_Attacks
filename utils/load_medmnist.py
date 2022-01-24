@@ -4,15 +4,12 @@ import torchvision.transforms as transforms
 import medmnist
 from medmnist import INFO
 
-def load_mnist(data_flag="octmnist", BATCH_SIZE=128, download=True, num_workers=4, data_transform=None):
+def get_mnist_dataset(data_flag, test=False, download=True, data_transform=None):
+
     info = INFO[data_flag]
     task = info['task']
     n_channels = info['n_channels']
     n_classes = len(info['label'])
-
-    DataClass = getattr(medmnist, info['python_class'])
-
-    ###############################################################
 
     # preprocessing
     if not data_transform:
@@ -21,9 +18,18 @@ def load_mnist(data_flag="octmnist", BATCH_SIZE=128, download=True, num_workers=
             transforms.Normalize(mean=[.5], std=[.5])
         ])
 
+    DataClass = getattr(medmnist, info['python_class'])
+    return DataClass(split='test' if test else 'train', transform=data_transform, download=download)
+
+
+def load_mnist(data_flag="octmnist", BATCH_SIZE=128, download=True, num_workers=4, data_transform=None):
+
+    ###############################################################
+
+
     # load the data
-    train_dataset = DataClass(split='train', transform=data_transform, download=download)
-    test_dataset = DataClass(split='test', transform=data_transform, download=download)
+    train_dataset = get_mnist_dataset(data_flag, download=download, data_transform=data_transform)
+    test_dataset = get_mnist_dataset(data_flag, test=True, download=download, data_transform=data_transform)
 
 
     # encapsulate data into dataloader form

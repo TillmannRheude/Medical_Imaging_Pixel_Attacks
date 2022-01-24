@@ -45,7 +45,7 @@ def train(model, train_loader, dev, lr, NUM_EPOCHS, task="multi-label, binary-cl
 
                 tepoch.set_postfix(loss=loss.item())  # , accuracy=100. * accuracy
 
-    model_flag = data_flag
+    model_flag = f'resnet18_{data_flag}'
     PATH = os.path.join(os.path.abspath(os.getcwd()), 'trained_models/', model_flag + '.pth')
     torch.save(model.state_dict(), PATH)
 
