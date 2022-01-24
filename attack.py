@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 import torch
 from medmnist import INFO
@@ -7,30 +8,86 @@ import torchvision.transforms as transforms
 
 from evaluate import evaluate
 
-from utils import load_mnist
+from utils import load_mnist, complement
 
 import matplotlib.pyplot as plt
 
-def random_single_pixel_flip_attack(input_image, image_type="grayscale", k=1):
+def attack_complementary_pixel(input_image, image_type="grayscale", k=1):
     """
-    Flips a single random pixel in a binary image
-    :param input_image:
-    :return:
+    Replaces k-pixels in the image with their complementary color (1-value in the case of grayscale)
     """
-    plot = False
+    plot = True
     if plot:
         plt.imshow(input_image[0], cmap='gray')
         plt.show()
     ys = torch.randperm(input_image[0].size(0))
     xs = torch.randperm(input_image[0].size(1))
-    idx = [ys[:k], xs[:k]]
-    input_image[0][idx] = 1 - input_image[0][idx]
+    for i,y in enumerate(ys[:k]):
+        x = xs[i]
+        if image_type == "grayscale":
+            input_image[0][y,x] = 1 - input_image[0][y,x]
+        else:
+            input_image[0][y,x] = complement(input_image[0][y,x])
+
+
     if plot:
         plt.imshow(input_image[0], cmap='gray')
         plt.show()
     return input_image
 
-# attack
+def attack_0_1_pixel(input_image, image_type="grayscale", k=1, probability_1=0.5):
+    """
+    Replaces k-pixels in the input image with randomly black or white (0,1 for grayscale)
+    Selection of black or white is determined by probability_1, where probability for 0 is 1-probability_1
+    """
+    plot = False
+    if plot:
+        plt.imshow(input_image[0], cmap='gray')
+        plt.show()
+
+    ys = torch.randperm(input_image[0].size(0))
+    xs = torch.randperm(input_image[0].size(1))
+    for i,y in enumerate(ys[:k]):
+        x = xs[i]
+        rnd_number = np.random.uniform(0,1)
+        if image_type == "grayscale":
+            input_image[0][y,x] = 1 if rnd_number <= probability_1 else 0
+        else:
+            input_image[0][y,x] = (255,255,255) if rnd_number <= probability_1 else (0,0,0)
+
+
+    if plot:
+        plt.imshow(input_image[0], cmap='gray')
+        plt.show()
+    return input_image
+
+def attack_addative_noise_on_pixel(input_image, image_type="grayscale", k=1, mean=0, std=1):
+    """
+    Replaces k-pixels in the input image with randomly black or white (0,1 for grayscale)
+    Selection of black or white is determined by probability_1, where probability for 0 is 1-probability_1
+    """
+    plot = False
+    if plot:
+        plt.imshow(input_image[0], cmap='gray')
+        plt.show()
+
+    ys = torch.randperm(input_image[0].size(0))
+    xs = torch.randperm(input_image[0].size(1))
+    for i,y in enumerate(ys[:k]):
+        x = xs[i]
+        noise = np.random.normal(mean, std)
+        if image_type == "grayscale":
+            input_image[0][y,x] = np.clip(input_image[0][y,x] + noise, 0, 1)
+        else:
+            #TODO check if RGB is normalized
+            input_image[0][y,x] = np.clip(input_image[0][y,x] + noise, 0, 255)
+
+
+    if plot:
+        plt.imshow(input_image[0], cmap='gray')
+        plt.show()
+    return input_image
+
 
 def explicit_pixel_attack(input_image, pixel_list=[[30, 30], [32, 32]], image_type="grayscale"):
 
@@ -81,7 +138,7 @@ if __name__ == "__main__":
     attack_transform = transforms.Compose([
         transforms.Resize(64),
         transforms.ToTensor(),
-        transforms.Lambda(explicit_pixel_attack),
+        transforms.Lambda(attack_complementary_pixel),
         transforms.Normalize(mean=[0.5], std=[0.5])
     ])
 

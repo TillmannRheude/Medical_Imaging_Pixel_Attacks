@@ -48,7 +48,7 @@ def evaluate(model, data_loader, split, data_flag, dev="cpu"):
 
 if __name__ == "__main__":
     ## load model
-    data_flag = 'octmnist'
+    data_flag = 'bloodmnist'
     info = INFO[data_flag]
     task = info['task']
     n_channels = info['n_channels']

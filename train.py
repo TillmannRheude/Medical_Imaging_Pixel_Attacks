@@ -50,7 +50,8 @@ def train(model, train_loader, dev, lr, NUM_EPOCHS, task="multi-label, binary-cl
     torch.save(model.state_dict(), PATH)
 
 if __name__ == "__main__":
-    data_flag = 'octmnist'
+
+    data_flag = 'bloodmnist'
 
     download = True
     num_workers = 2
