@@ -18,7 +18,7 @@ def attack_complementary_pixel(input_image, image_type="grayscale", k=1):
     """
     plot = True
     if plot:
-        plt.imshow(input_image[0], cmap='gray')
+        plt.imshow(input_image[0])
         plt.show()
     ys = torch.randperm(input_image[0].size(0))
     xs = torch.randperm(input_image[0].size(1))
@@ -30,8 +30,12 @@ def attack_complementary_pixel(input_image, image_type="grayscale", k=1):
             input_image[0][y,x] = complement(input_image[0][y,x])
 
 
-    if plot:
-        plt.imshow(input_image[0], cmap='gray')
+    if plot and image_type == "grayscale":
+        plt.imshow(input_image[0])
+        plt.show()
+    elif plot:
+        i = np.asarray(input_image).T
+        plt.imshow(i)
         plt.show()
     return input_image
 
@@ -53,7 +57,7 @@ def attack_0_1_pixel(input_image, image_type="grayscale", k=1, probability_1=0.5
         if image_type == "grayscale":
             input_image[0][y,x] = 1 if rnd_number <= probability_1 else 0
         else:
-            input_image[0][y,x] = (255,255,255) if rnd_number <= probability_1 else (0,0,0)
+            input_image[0][y,x] = (1,1,1) if rnd_number <= probability_1 else (0,0,0)
 
 
     if plot:
@@ -80,7 +84,7 @@ def attack_addative_noise_on_pixel(input_image, image_type="grayscale", k=1, mea
             input_image[0][y,x] = np.clip(input_image[0][y,x] + noise, 0, 1)
         else:
             #TODO check if RGB is normalized
-            input_image[0][y,x] = np.clip(input_image[0][y,x] + noise, 0, 255)
+            input_image[0][y,x] = np.clip(input_image[0][y,x] + noise, 0, 1)
 
 
     if plot:
@@ -111,7 +115,7 @@ def explicit_pixel_attack(input_image, pixel_list=[[30, 30], [32, 32]], image_ty
 
 if __name__ == "__main__":
     ## load model
-    data_flag = 'octmnist'
+    data_flag = 'bloodmnist'
     info = INFO[data_flag]
     task = info['task']
     n_channels = info['n_channels']

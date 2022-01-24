@@ -83,5 +83,5 @@ if __name__ == "__main__":
     model.to(dev)
     model.load_state_dict(torch.load(PATH))
 
-    evaluate(model, train_loader_at_eval, "train", data_flag)
-    evaluate(model, test_loader, "test", data_flag)
+    evaluate(model, train_loader_at_eval, "train", data_flag, dev=dev)
+    evaluate(model, test_loader, "test", data_flag, dev=dev)
