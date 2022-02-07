@@ -69,7 +69,7 @@ def complementary_tensor(image, is_rgb, y, x):
 def zero_one_tensor(image, is_rgb, y, x, probability_1 = 0.5):
     rnd_number = np.random.uniform(0, 1)
     if is_rgb:
-        image[:, y, x] = (1, 1, 1) if rnd_number <= probability_1 else (0, 0, 0)
+        image[:, y, x] = torch.tensor([[[1], [1], [1]]]) if rnd_number <= probability_1 else torch.tensor([[[0], [0], [0]]])
     else:
         image[:, y, x] = 1 if rnd_number <= probability_1 else 0
 
@@ -98,9 +98,13 @@ def attack_tensor_image(image, attack='complementary', k=1):
         exit(1, 'illegal function')
 
     is_rgb = channels == 3
+    print("change", k)
     for y, x in indeces[:k]:
         foo(image, is_rgb, y, x)
 
+    plt.imshow(image[0].numpy())
+    plt.show()
+    return image
 def attack_complementary_pixel(input_image, image_type="grayscale", k=1):
     """
     Replaces k-pixels in the image with their complementary color (1-value in the case of grayscale)

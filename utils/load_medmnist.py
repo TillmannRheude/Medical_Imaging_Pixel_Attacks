@@ -20,7 +20,6 @@ def get_mnist_dataset(data_flag, test=False, download=True, data_transform=None,
             transforms.ToTensor(),
             transforms.Normalize(mean=[.5], std=[.5])
         ])
-    data_aug = False
     if data_aug: 
         data_transform.transforms.insert(2, RandomGaussianBlur())
         data_transform.transforms.insert(2, AddRandomGaussianNoise())

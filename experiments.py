@@ -19,6 +19,7 @@ def random_pixels(input_image):
 
     k = inf['k']
     attack = inf['attack_func']
+    print(k)
     input_image = attack_tensor_image(input_image, attack=attack, k=k)
     return input_image
 
@@ -56,8 +57,10 @@ def explicit_pixel_attack(input_image, image_type="grayscale"):
 
 
 def create_attacked_dataset(type, data_flag='resnet18_octmnist'):
-    PATH = os.path.join(os.path.abspath(os.getcwd()), 'trained_models/', data_flag + '.pth')
-    data_flag = data_flag.split("_")[-1]
+    MONTE_CARLO = True
+    DATA_AUGMENTATION = True
+    data_flag = data_flag.split("_")[1]
+    ## load model
     info = INFO[data_flag]
     task = info['task']
     n_channels = info['n_channels']
@@ -66,8 +69,9 @@ def create_attacked_dataset(type, data_flag='resnet18_octmnist'):
     download = True
     num_workers = 2
     NUM_EPOCHS = 1
-    BATCH_SIZE = 1
+    BATCH_SIZE = 64
     lr = 0.001
+
     if torch.cuda.is_available():
         dev = "cuda:0"
     else:
@@ -91,16 +95,19 @@ def create_attacked_dataset(type, data_flag='resnet18_octmnist'):
             transforms.Normalize(mean=[0.5], std=[0.5])
         ])
 
+    PATH = os.path.join(os.path.abspath(os.getcwd()), 'trained_models/resnet18_' + data_flag + '.pth')
 
-    dataset_attack = load_mnist(data_flag, BATCH_SIZE, download, num_workers, attack_transform)
+    if DATA_AUGMENTATION:
+        dataset_attack = load_mnist(data_flag, BATCH_SIZE, download, num_workers, attack_transform, data_aug=True)
+    else:
+        dataset_attack = load_mnist(data_flag, BATCH_SIZE, download, num_workers, attack_transform)
 
     attack_loader = dataset_attack["test_loader"]
-    # load model
     model = create_resnet(data_flag)
     model.to(dev)
     model.load_state_dict(torch.load(PATH))
-    print("Hallo1")
     return model, attack_loader, dev
+
 
 
 def experiment_location_vs_error(size, data_flag):
@@ -132,7 +139,7 @@ def experiment_count_vs_error(count, step, attack_func, data_flag):
     x_count = []
     y_error = []
 
-    for k in range(64,count, step):
+    for k in range(1,count, step):
         with open('attacked_pixels.json', 'w') as f:
             json.dump({'k': k, 'attack_func': attack_func}, f)
 
