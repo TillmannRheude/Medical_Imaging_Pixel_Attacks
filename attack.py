@@ -24,6 +24,7 @@ def zero_one(image, is_rgb, y, x, probability_1 = 0.5):
         image[y, x] = (1, 1, 1) if rnd_number <= probability_1 else (0, 0, 0)
     else:
         image[y, x] = 1 if rnd_number <= probability_1 else 0
+    return image
 
 def additive_noise(image, is_rgb, y, x, mean=0, std=1):
     noise = np.random.normal(mean, std)
@@ -32,6 +33,7 @@ def additive_noise(image, is_rgb, y, x, mean=0, std=1):
         image[y, x] = np.clip(image[y, x] + noise, 0, 1)
     else:
         image[y, x] = np.clip(image[y, x] + noise, 0, 1)
+    return image
 
 def attack_single_image(image, attack, k=1, seed=None):
     # 28,28 / 28,28,3
@@ -101,7 +103,7 @@ def attack_complementary_pixel(input_image, image_type="grayscale", k=1):
     Replaces k-pixels in the image with their complementary color (1-value in the case of grayscale)
     """
     # 1,64,64 / 3,64,64
-    plot = False
+    plot = True
     if plot:
         plt.imshow(input_image[0])
         plt.show()
