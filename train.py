@@ -9,9 +9,9 @@ import torchvision.transforms as transforms
 
 import medmnist
 from medmnist import INFO
+from models import create_resnet
 
 from utils import load_mnist
-
 
 def train(model, train_loader, dev, lr, NUM_EPOCHS, task="multi-label, binary-class"):
     # define loss function and optimizer
@@ -50,6 +50,8 @@ def train(model, train_loader, dev, lr, NUM_EPOCHS, task="multi-label, binary-cl
     torch.save(model.state_dict(), PATH)
 
 if __name__ == "__main__":
+    MONTE_CARLO = True
+    DATA_AUGMENTATION = True
 
     data_flag = 'bloodmnist'
 
@@ -69,10 +71,15 @@ if __name__ == "__main__":
     data_transform = transforms.Compose([
         transforms.Resize(64),
         transforms.ToTensor(),
+        RandomGaussianBlur(),
+        AddRandomGaussianNoise(), # we can add even more augmentation techniques right here
         transforms.Normalize(mean=[0.5], std=[0.5])
     ])
 
-    dataset = load_mnist(data_flag, BATCH_SIZE, download, num_workers, data_transform)
+    if DATA_AUGMENTATION: 
+        dataset = load_mnist(data_flag, BATCH_SIZE, download, num_workers, data_transform, data_aug = True)
+    else: 
+        dataset = load_mnist(data_flag, BATCH_SIZE, download, num_workers, data_transform)
 
     train_loader = dataset["train_loader"]
 
@@ -81,8 +88,14 @@ if __name__ == "__main__":
     else:
         dev = "cpu"
 
-    from models import create_resnet
     model = create_resnet(data_flag)
+
+    if MONTE_CARLO:
+        # Apply Monte-Carlo Dropout
+        for m in model.modules():
+            if isinstance(m, nn.Dropout):
+                m.p = 0.3
+
     model.to(dev)
 
     train(model, train_loader, dev, lr, NUM_EPOCHS, task)
