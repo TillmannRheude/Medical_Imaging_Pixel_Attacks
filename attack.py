@@ -71,6 +71,8 @@ def zero_one_tensor(image, is_rgb, y, x, probability_1 = 0.5):
     else:
         image[:, y, x] = 1 if rnd_number <= probability_1 else 0
 
+    return image
+
 def additive_noise_tensor(image, is_rgb, y, x, mean=0, std=1):
     noise = np.random.normal(mean, std)
     if is_rgb:
@@ -78,6 +80,7 @@ def additive_noise_tensor(image, is_rgb, y, x, mean=0, std=1):
         image[:, y, x] = np.clip(image[:, y, x] + noise, 0, 1)
     else:
         image[:, y, x] = np.clip(image[:, y, x] + noise, 0, 1)
+    return image
 
 def attack_tensor_image(image, attack='complementary', k=1):
     # edits image in place!
@@ -180,20 +183,41 @@ def attack_addative_noise_on_pixel(input_image, image_type="grayscale", k=1, mea
         plt.show()
     return input_image
 
-def explicit_pixel_attack(input_image, pixel_list=[[30, 30], [32, 32]], image_type="grayscale"):
+def explicit_pixel_attack_tensor(input_image, attack="complementery", pixel_list=[[30, 30], [32, 32]]):
 
     plot = False
     if plot:
         plt.imshow(input_image[0], cmap='gray')
         plt.show()
 
-    for idx in pixel_list:
-        input_image[0][idx] = 1 - input_image[0][idx]
+    image = image.copy()
+    if len(image.shape) == 3:
+        height, width, channels = image.shape
+    else:
+        height, width = image.shape
+        channels = 1
+
+    is_rgb = channels == 3
+    if attack == "complementary":
+        for idx in pixel_list:
+            input_image[0][idx] = 1 - input_image[0][idx]
+    elif attack == "zero_one":
+        for idx in pixel_list:
+            input_image = zero_one_tensor(input_image, is_rgb, idx[0], idx[1])
+    elif attack == "additive_noise":
+        for idx in pixel_list:
+            input_image = additive_noise_tensor(input_image, is_rgb, idx[0], idx[1])
+    else:
+        exit(1, 'illegal function')
 
     if plot:
         plt.imshow(input_image[0], cmap='gray')
         plt.show()
+        foo = additive_noise
+    else:
+        exit(1, 'illegal function')
 
+    print(input_image)
     return input_image
 
 

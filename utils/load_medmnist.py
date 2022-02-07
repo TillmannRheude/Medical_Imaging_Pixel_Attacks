@@ -20,7 +20,7 @@ def get_mnist_dataset(data_flag, test=False, download=True, data_transform=None,
             transforms.ToTensor(),
             transforms.Normalize(mean=[.5], std=[.5])
         ])
-    
+    data_aug = False
     if data_aug: 
         data_transform.transforms.insert(1, RandomGaussianBlur())
         data_transform.transforms.insert(1, AddRandomGaussianNoise())
@@ -30,7 +30,6 @@ def get_mnist_dataset(data_flag, test=False, download=True, data_transform=None,
 
 
 def load_mnist(data_flag="octmnist", BATCH_SIZE=128, download=True, num_workers=4, data_transform=None, data_aug = False):
-
     # load the data
     if data_aug:
         train_dataset = get_mnist_dataset(data_flag, download=download, data_transform=data_transform, data_aug = True)
