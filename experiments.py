@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import json
 import numpy as np
 
-from attack import attack_single_image
+from attack import attack_tensor_image, explicit_pixel_attack_tensor
 
 
 def random_pixels(input_image):
@@ -19,28 +19,18 @@ def random_pixels(input_image):
 
     k = inf['k']
     attack = inf['attack_func']
-    input_image = attack_single_image(input_image[0].numpy(), attack=attack, k=k)
-    input_image = torch.tensor(np.asarray([input_image,]))
+    input_image = attack_tensor_image(input_image, attack=attack, k=k)
     return input_image
 
 
-def explicit_pixel_attack(input_image, image_type="grayscale"):
-    plot = False
-    if plot:
-        plt.imshow(input_image[0], cmap='gray')
-        plt.show()
+def explicit_pixels(input_image, image_type="grayscale"):
 
-    pixels = {}
     with open('attacked_pixels.json', 'r') as f:
-        pixels = json.load(f)
+        inf = json.load(f)
 
-    for idx in pixels['pixels']:
-        input_image[0][idx[0]][idx[1]] = 1 - input_image[0][idx[0]][idx[1]]
-
-    if plot:
-        plt.imshow(input_image[0], cmap='gray')
-        plt.show()
-
+    pxl_list = inf['pixels']
+    attack = inf['attack_func']
+    input_image = explicit_pixel_attack_tensor(input_image, attack=attack, pixel_list=pxl_list)
     return input_image
 
 
@@ -76,7 +66,7 @@ def create_attacked_dataset(type, data_flag='resnet18_octmnist'):
         attack_transform = transforms.Compose([
             transforms.Resize(64),
             transforms.ToTensor(),
-            transforms.Lambda(explicit_pixel_attack),
+            transforms.Lambda(explicit_pixels),
             transforms.Normalize(mean=[0.5], std=[0.5])
         ])
 
@@ -141,5 +131,5 @@ def experiment_count_vs_error(count, step, attack_func, data_flag):
 if __name__ == "__main__":
 
     print("start experiment")
-    #experiment_location_vs_error(16, "resnet18_octmnist")
+    experiment_location_vs_error(16, "resnet18_octmnist")
     experiment_count_vs_error(70, 1, "zero_one", "resnet18_octmnist")

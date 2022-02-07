@@ -191,7 +191,7 @@ def attack_addative_noise_on_pixel(input_image, image_type="grayscale", k=1, mea
     return input_image
 
 
-def explicit_pixel_attack(input_image, attack="complementery", pixel_list=[[30, 30], [32, 32]], image_type="grayscale"):
+def explicit_pixel_attack_tensor(input_image, attack="complementery", pixel_list=[[30, 30], [32, 32]]):
 
     plot = False
     if plot:
@@ -211,9 +211,10 @@ def explicit_pixel_attack(input_image, attack="complementery", pixel_list=[[30, 
             input_image[0][idx] = 1 - input_image[0][idx]
     elif attack == "zero_one":
         for idx in pixel_list:
-            input_image = zero_one(image, is_rgb, idx[0], idx[1])
+            input_image = zero_one_tensor(input_image, is_rgb, idx[0], idx[1])
     elif attack == "additive_noise":
-        foo = additive_noise
+        for idx in pixel_list:
+            input_image = additive_noise_tensor(input_image, is_rgb, idx[0], idx[1])
     else:
         exit(1, 'illegal function')
 
