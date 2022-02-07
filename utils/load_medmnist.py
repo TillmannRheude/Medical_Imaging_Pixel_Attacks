@@ -4,7 +4,7 @@ import torchvision.transforms as transforms
 import medmnist
 from medmnist import INFO
 
-from utils import load_mnist, complement, select_random_pixels, AddRandomGaussianNoise, RandomGaussianBlur
+from .random_pixels import AddRandomGaussianNoise, RandomGaussianBlur
 
 def get_mnist_dataset(data_flag, test=False, download=True, data_transform=None, data_aug = False):
 
@@ -16,19 +16,14 @@ def get_mnist_dataset(data_flag, test=False, download=True, data_transform=None,
     # preprocessing
     if not data_transform:
         data_transform = transforms.Compose([
+            transforms.Resize(64),
             transforms.ToTensor(),
             transforms.Normalize(mean=[.5], std=[.5])
         ])
     
     if data_aug: 
-        data_augmentations = transforms.Compose([
-            transforms.ToTensor(),
-            RandomGaussianBlur(),
-            AddRandomGaussianNoise(), # we can add even more augmentation techniques right here
-            transforms.Normalize(mean=[.5], std=[.5])
-        ])
-
-        data_transform = data_transform + data_augmentations
+        data_transform.transforms.insert(1, RandomGaussianBlur())
+        data_transform.transforms.insert(1, AddRandomGaussianNoise())
 
     DataClass = getattr(medmnist, info['python_class'])
     return DataClass(split='test' if test else 'train', transform=data_transform, download=download)

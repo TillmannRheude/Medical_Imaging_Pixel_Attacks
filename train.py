@@ -13,6 +13,7 @@ from models import create_resnet
 
 from utils import load_mnist
 
+
 def train(model, train_loader, dev, lr, NUM_EPOCHS, task="multi-label, binary-class"):
     # define loss function and optimizer
     if task == "multi-label, binary-class":
@@ -71,8 +72,6 @@ if __name__ == "__main__":
     data_transform = transforms.Compose([
         transforms.Resize(64),
         transforms.ToTensor(),
-        RandomGaussianBlur(),
-        AddRandomGaussianNoise(), # we can add even more augmentation techniques right here
         transforms.Normalize(mean=[0.5], std=[0.5])
     ])
 
