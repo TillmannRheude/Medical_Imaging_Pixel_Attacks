@@ -42,6 +42,11 @@ def attack_single_image(image, attack, k=1, seed=None):
         height, width = image.shape
         channels = 1
 
+    plot = True
+    if plot:
+        plt.imshow(image[0])
+        plt.show()
+
 
     if attack == 'complementary':
         foo = complementary
@@ -57,6 +62,11 @@ def attack_single_image(image, attack, k=1, seed=None):
     is_rgb = channels == 3
     for y, x in indeces[:k]:
         foo(image, is_rgb, y, x)
+
+    plot = True
+    if plot:
+        plt.imshow(image[0])
+        plt.show()
 
     return image
 
@@ -142,20 +152,38 @@ def attack_addative_noise_on_pixel(input_image, image_type="grayscale", k=1, mea
     return input_image
 
 
-def explicit_pixel_attack(input_image, pixel_list=[[30, 30], [32, 32]], image_type="grayscale"):
+def explicit_pixel_attack(input_image, attack="complementery", pixel_list=[[30, 30], [32, 32]], image_type="grayscale"):
 
     plot = False
     if plot:
         plt.imshow(input_image[0], cmap='gray')
         plt.show()
 
-    for idx in pixel_list:
-        input_image[0][idx] = 1 - input_image[0][idx]
+    image = image.copy()
+    if len(image.shape) == 3:
+        height, width, channels = image.shape
+    else:
+        height, width = image.shape
+        channels = 1
+
+    is_rgb = channels == 3
+    if attack == "complementary":
+        for idx in pixel_list:
+            input_image[0][idx] = 1 - input_image[0][idx]
+    elif attack == "zero_one":
+        for idx in pixel_list:
+            input_image = zero_one(image, is_rgb, idx[0], idx[1])
+    elif attack == "additive_noise":
+        foo = additive_noise
+    else:
+        exit(1, 'illegal function')
 
     if plot:
         plt.imshow(input_image[0], cmap='gray')
         plt.show()
-
+        foo = additive_noise
+    else:
+        exit(1, 'illegal function')
     return input_image
 
 
