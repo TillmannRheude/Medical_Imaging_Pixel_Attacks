@@ -22,8 +22,8 @@ def get_mnist_dataset(data_flag, test=False, download=True, data_transform=None,
         ])
     
     if data_aug: 
-        data_transform.transforms.insert(1, RandomGaussianBlur())
-        data_transform.transforms.insert(1, AddRandomGaussianNoise())
+        data_transform.transforms.insert(2, RandomGaussianBlur())
+        data_transform.transforms.insert(2, AddRandomGaussianNoise())
 
     DataClass = getattr(medmnist, info['python_class'])
     return DataClass(split='test' if test else 'train', transform=data_transform, download=download)
