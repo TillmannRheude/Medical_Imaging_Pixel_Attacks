@@ -4,7 +4,9 @@ import torchvision.transforms as transforms
 import medmnist
 from medmnist import INFO
 
-def get_mnist_dataset(data_flag, test=False, download=True, data_transform=None):
+from utils import load_mnist, complement, select_random_pixels, AddRandomGaussianNoise, RandomGaussianBlur
+
+def get_mnist_dataset(data_flag, test=False, download=True, data_transform=None, data_aug = False):
 
     info = INFO[data_flag]
     task = info['task']
@@ -17,19 +19,30 @@ def get_mnist_dataset(data_flag, test=False, download=True, data_transform=None)
             transforms.ToTensor(),
             transforms.Normalize(mean=[.5], std=[.5])
         ])
+    
+    if data_aug: 
+        data_augmentations = transforms.Compose([
+            transforms.ToTensor(),
+            RandomGaussianBlur(),
+            AddRandomGaussianNoise(), # we can add even more augmentation techniques right here
+            transforms.Normalize(mean=[.5], std=[.5])
+        ])
+
+        data_transform = data_transform + data_augmentations
 
     DataClass = getattr(medmnist, info['python_class'])
     return DataClass(split='test' if test else 'train', transform=data_transform, download=download)
 
 
-def load_mnist(data_flag="octmnist", BATCH_SIZE=128, download=True, num_workers=4, data_transform=None):
-
-    ###############################################################
-
+def load_mnist(data_flag="octmnist", BATCH_SIZE=128, download=True, num_workers=4, data_transform=None, data_aug = False):
 
     # load the data
-    train_dataset = get_mnist_dataset(data_flag, download=download, data_transform=data_transform)
-    test_dataset = get_mnist_dataset(data_flag, test=True, download=download, data_transform=data_transform)
+    if data_aug:
+        train_dataset = get_mnist_dataset(data_flag, download=download, data_transform=data_transform, data_aug = True)
+        test_dataset = get_mnist_dataset(data_flag, test=True, download=download, data_transform=data_transform, data_aug = True)
+    else: 
+        train_dataset = get_mnist_dataset(data_flag, download=download, data_transform=data_transform)
+        test_dataset = get_mnist_dataset(data_flag, test=True, download=download, data_transform=data_transform)
 
 
     # encapsulate data into dataloader form
