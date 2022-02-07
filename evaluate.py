@@ -45,6 +45,45 @@ def evaluate(model, data_loader, split, data_flag, dev="cpu"):
         print('%s  acc: %.3f  auc:%.3f' % (split, *metrics))
 
 
+def gui_call_evaluate(data_flag, ):
+    data_flag = 'bloodmnist'
+    info = INFO[data_flag]
+    task = info['task']
+    n_channels = info['n_channels']
+    n_classes = len(info['label'])
+
+    download = True
+    num_workers = 2
+    NUM_EPOCHS = 1
+    BATCH_SIZE = 128
+    lr = 0.001
+
+    if torch.cuda.is_available():
+        dev = "cuda:0"
+    else:
+        dev = "cpu"
+    device = torch.device(dev)
+
+    data_transform = transforms.Compose([
+        transforms.Resize(64),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.5], std=[0.5])
+    ])
+
+    PATH = os.path.join(os.path.abspath(os.getcwd()), 'trained_models/', data_flag + '.pth')
+
+    dataset = load_mnist(data_flag, BATCH_SIZE, download, num_workers, data_transform)
+    train_loader = dataset["train_loader"]
+    test_loader = dataset["test_loader"]
+    train_loader_at_eval = dataset["train_loader_at_eval"]
+
+    model = create_resnet(data_flag)
+    model.to(dev)
+    model.load_state_dict(torch.load(PATH))
+
+    evaluate(model, train_loader_at_eval, "train", data_flag, dev=dev)
+    evaluate(model, test_loader, "test", data_flag, dev=dev)
+
 
 if __name__ == "__main__":
     ## load model
