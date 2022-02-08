@@ -167,6 +167,53 @@ def explicit_pixel_attack_tensor(input_image, attack="complementery", pixel_list
     return input_image
 """
 
+def gui_call_evaluate_attack(data_flag, num_pixels, attack):
+    info = INFO[data_flag]
+
+    download = True
+    num_workers = 4
+    BATCH_SIZE = 64
+
+    if torch.cuda.is_available():
+        dev = "cuda:0"
+    else:
+        dev = "cpu"
+
+    device = torch.device(dev)
+    print("Cuda available", torch.cuda.is_available())
+    print("Cuda device used:", dev)
+
+    def l(image):
+        return attack_tensor_image(image, attack, num_pixels)
+    data_transform = transforms.Compose([
+        transforms.Resize(64),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.5], std=[0.5])
+    ])
+    attack_transform = transforms.Compose([
+        transforms.Resize(64),
+        transforms.ToTensor(),
+        transforms.Lambda(l),
+        transforms.Normalize(mean=[0.5], std=[0.5])
+    ])
+
+    PATH = os.path.join(os.path.abspath(os.getcwd()), 'trained_models/resnet18_' + data_flag + '.pth')
+
+    dataset = load_mnist(data_flag, BATCH_SIZE, download, num_workers, data_transform )
+    dataset_attack = load_mnist(data_flag, BATCH_SIZE, download, num_workers, attack_transform,)
+
+    attack_loader = dataset_attack["test_loader"]
+    test_loader = dataset["test_loader"]
+
+    model = create_resnet(data_flag)
+    model.to(dev)
+    model.load_state_dict(torch.load(PATH, map_location=device))
+
+    print("Attack Evaluation:")
+    attack_metrics = evaluate(model, attack_loader, "test", data_flag, dev=dev)
+    print("Normal Evaluation:")
+    orignal_metrics = evaluate(model, test_loader, "test", data_flag, dev=dev)
+    return orignal_metrics, attack_metrics
 
 if __name__ == "__main__":
     MONTE_CARLO = False

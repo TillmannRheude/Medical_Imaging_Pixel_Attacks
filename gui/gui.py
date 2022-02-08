@@ -176,8 +176,8 @@ while True:
             test_metrics, attack_metrics = gui_call_evaluate_attack(dataset.flag, int(num_pixels), 'zero_one')
         elif selected_attack == 'Complementary':
             test_metrics, attack_metrics = gui_call_evaluate_attack(dataset.flag, int(num_pixels), 'complementary')
-        text = f'Dataset:  acc:{round(test_metrics[0],3)} auc:{round(test_metrics[1],3)}\n' \
-               f'Attacked: acc:{round(attack_metrics[0],3)} auc:{round(attack_metrics[1],3)}\n'
+        text = f'Original: acc:{round(test_metrics[0],3)} auc:{round(test_metrics[1],3)}\n\n' \
+               f'Attacked: acc:{round(attack_metrics[0],3)} auc:{round(attack_metrics[1],3)}'
         window['-INFOTEXT-'].update(text)
 
     elif event == "OK" or event == sg.WIN_CLOSED:
