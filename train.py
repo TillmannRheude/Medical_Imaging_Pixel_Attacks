@@ -51,14 +51,14 @@ def train(model, train_loader, dev, lr, NUM_EPOCHS, task="multi-label, binary-cl
     torch.save(model.state_dict(), PATH)
 
 if __name__ == "__main__":
-    MONTE_CARLO = True
-    DATA_AUGMENTATION = True
+    MONTE_CARLO = False
+    DATA_AUGMENTATION = False
 
-    data_flag = 'bloodmnist'
+    data_flag = 'retinamnist'
 
     download = True
     num_workers = 2
-    NUM_EPOCHS = 10
+    NUM_EPOCHS = 40
     BATCH_SIZE = 128
     lr = 0.001
 

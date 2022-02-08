@@ -95,7 +95,7 @@ def additive_noise_tensor_attack(image, is_rgb, y, x, mean=0, std=0.5):
         image[:, y, x] = np.clip(image[:, y, x] + noise, 0, 1)
     return image
 
-def attack_tensor_image(image, attack='zero_one', k=3000):
+def attack_tensor_image(image, attack='zero_one', k=2):
     plot_img = False
     if plot_img:
         plt.show()
@@ -167,11 +167,8 @@ def explicit_pixel_attack_tensor(input_image, attack="complementery", pixel_list
 
 
 if __name__ == "__main__":
-    MONTE_CARLO = False
-    DATA_AUGMENTATION = False
-
     ## load model
-    data_flag = 'octmnist'
+    data_flag = 'breastmnist'
     info = INFO[data_flag]
     task = info['task']
     n_channels = info['n_channels']
@@ -180,7 +177,7 @@ if __name__ == "__main__":
     download = True
     num_workers = 4
     NUM_EPOCHS = 1
-    BATCH_SIZE = 64
+    BATCH_SIZE = 128
     lr = 0.001
 
     if torch.cuda.is_available():
@@ -206,20 +203,13 @@ if __name__ == "__main__":
 
     PATH = os.path.join(os.path.abspath(os.getcwd()), 'trained_models/resnet18_' + data_flag + '.pth')
 
-    dataset = load_mnist(data_flag, BATCH_SIZE, download, num_workers, data_transform, data_aug=DATA_AUGMENTATION)
-    dataset_attack = load_mnist(data_flag, BATCH_SIZE, download, num_workers, attack_transform, data_aug=DATA_AUGMENTATION)
+    dataset = load_mnist(data_flag, BATCH_SIZE, download, num_workers, data_transform)
+    dataset_attack = load_mnist(data_flag, BATCH_SIZE, download, num_workers, attack_transform)
 
     attack_loader = dataset_attack["test_loader"]
     test_loader = dataset["test_loader"]
 
     model = create_resnet(data_flag)
-
-    if MONTE_CARLO:
-        # Apply Monte-Carlo Dropout
-        for m in model.modules():
-            if isinstance(m, nn.Dropout):
-                m.p = 0.3
-
     model.to(dev)
     model.load_state_dict(torch.load(PATH, map_location=device))
 

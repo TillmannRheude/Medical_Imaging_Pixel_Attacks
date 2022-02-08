@@ -111,7 +111,7 @@ if __name__ == "__main__":
         transforms.Normalize(mean=[0.5], std=[0.5])
     ])
 
-    PATH = os.path.join(os.path.abspath(os.getcwd()), 'trained_models/', data_flag + '.pth')
+    PATH = os.path.join(os.path.abspath(os.getcwd()), 'trained_models/resnet18_' + data_flag + '.pth')
 
     dataset = load_mnist(data_flag, BATCH_SIZE, download, num_workers, data_transform)
     train_loader = dataset["train_loader"]
