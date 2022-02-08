@@ -102,7 +102,6 @@ def attack_tensor_image(image, attack='complementary', k=1):
         exit(1, 'illegal function')
 
     is_rgb = channels == 3
-    print("change", k)
     for y, x in indeces[:k]:
         foo(image, is_rgb, y, x)
 
