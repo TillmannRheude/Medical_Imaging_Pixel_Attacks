@@ -50,7 +50,7 @@ def evaluate(model, data_loader, split, data_flag, dev="cpu"):
 
 
 def gui_call_evaluate(data_flag, ):
-    data_flag = 'bloodmnist'
+    data_flag = 'octmnist'
     info = INFO[data_flag]
     task = info['task']
     n_channels = info['n_channels']
@@ -74,7 +74,7 @@ def gui_call_evaluate(data_flag, ):
         transforms.Normalize(mean=[0.5], std=[0.5])
     ])
 
-    PATH = os.path.join(os.path.abspath(os.getcwd()), 'trained_models/', data_flag + '.pth')
+    PATH = os.path.join(os.path.abspath(os.getcwd()), 'trained_models/', data_flag  + '.pth')
 
     dataset = load_mnist(data_flag, BATCH_SIZE, download, num_workers, data_transform)
     train_loader = dataset["train_loader"]
@@ -91,7 +91,7 @@ def gui_call_evaluate(data_flag, ):
 
 if __name__ == "__main__":
     ## load model
-    data_flag = 'bloodmnist'
+    data_flag = 'octmnist'
     info = INFO[data_flag]
     task = info['task']
     n_channels = info['n_channels']
@@ -115,14 +115,14 @@ if __name__ == "__main__":
         transforms.Normalize(mean=[0.5], std=[0.5])
     ])
 
-    PATH = os.path.join(os.path.abspath(os.getcwd()), 'trained_models/resnet18_' + data_flag + '.pth')
+    PATH = os.path.join(os.path.abspath(os.getcwd()), 'trained_models/resnet18_' + data_flag +"_mcdropout" + '.pth')
 
     dataset = load_mnist(data_flag, BATCH_SIZE, download, num_workers, data_transform)
     train_loader = dataset["train_loader"]
     test_loader = dataset["test_loader"]
     train_loader_at_eval = dataset["train_loader_at_eval"]
 
-    model = create_resnet(data_flag)
+    model = create_resnet(data_flag, dropout=True)
     model.to(dev)
     model.load_state_dict(torch.load(PATH))
 

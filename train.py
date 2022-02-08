@@ -36,7 +36,7 @@ def train(model, train_loader, dev, lr, NUM_EPOCHS, task="multi-label, binary-cl
 
                 inputs, targets = inputs.to(dev), targets.to(dev)
 
-                outputs = model(inputs)
+                outputs = model(inputs.float())
 
                 targets = torch.squeeze(targets)
                 loss = criterion(outputs, targets)
@@ -47,18 +47,18 @@ def train(model, train_loader, dev, lr, NUM_EPOCHS, task="multi-label, binary-cl
                 tepoch.set_postfix(loss=loss.item())  # , accuracy=100. * accuracy
 
     model_flag = f'resnet18_{data_flag}'
-    PATH = os.path.join(os.path.abspath(os.getcwd()), 'trained_models/', model_flag + '.pth')
+    PATH = os.path.join(os.path.abspath(os.getcwd()), 'trained_models/', model_flag + "_mcdropout" + '.pth')
     torch.save(model.state_dict(), PATH)
 
 if __name__ == "__main__":
-    MONTE_CARLO = False
+    DROPOUT = True
     DATA_AUGMENTATION = False
 
-    data_flag = 'retinamnist'
+    data_flag = 'octmnist'
 
     download = True
     num_workers = 2
-    NUM_EPOCHS = 40
+    NUM_EPOCHS = 10
     BATCH_SIZE = 128
     lr = 0.001
 
@@ -87,14 +87,7 @@ if __name__ == "__main__":
     else:
         dev = "cpu"
 
-    model = create_resnet(data_flag)
-
-    if MONTE_CARLO:
-        # Apply Monte-Carlo Dropout
-        for m in model.modules():
-            if isinstance(m, nn.Dropout):
-                m.p = 0.3
-
+    model = create_resnet(data_flag, dropout=DROPOUT)
     model.to(dev)
 
     train(model, train_loader, dev, lr, NUM_EPOCHS, task)
