@@ -14,11 +14,11 @@ import torchvision.transforms as transforms
 from evaluate import evaluate
 from utils import load_mnist, complement, select_random_pixels
 
-
-def complementary(image, is_rgb, y, x):
+"""For GUI"""
+def complementary_attack(image, is_rgb, y, x):
     image[y, x] = complement(image[y, x]) if is_rgb else 1 - image[y, x]
 
-def zero_one(image, is_rgb, y, x, probability_1 = 0.5):
+def zero_one_attack(image, is_rgb, y, x, probability_1 = 0.5):
     rnd_number = np.random.uniform(0, 1)
     if is_rgb:
         image[y, x] = (1, 1, 1) if rnd_number <= probability_1 else (0, 0, 0)
@@ -26,7 +26,7 @@ def zero_one(image, is_rgb, y, x, probability_1 = 0.5):
         image[y, x] = 1 if rnd_number <= probability_1 else 0
     return image
 
-def additive_noise(image, is_rgb, y, x, mean=0, std=1):
+def additive_noise_attack(image, is_rgb, y, x, mean=0, std=1):
     noise = np.random.normal(mean, std)
     if is_rgb:
         # TODO check if RGB is normalized
@@ -47,11 +47,11 @@ def attack_single_image(image, attack, k=1, seed=None):
 
 
     if attack == 'complementary':
-        foo = complementary
+        foo = complementary_attack
     elif attack == 'zero_one':
-        foo = zero_one
+        foo = zero_one_attack
     elif attack == 'additive_noise':
-        foo = additive_noise
+        foo = additive_noise_attack
     else:
         exit(1, 'illegal function')
 
@@ -63,10 +63,14 @@ def attack_single_image(image, attack, k=1, seed=None):
 
     return image
 
-def complementary_tensor(image, is_rgb, y, x):
-    image[:, y, x] = complement(image[:, y, x]) if is_rgb else 1 - image[:, y, x]
+"""For Evaluation"""
+def complementary_tensor_attack(image, is_rgb, y, x):
+    comp = complement(image[:, y, x]) if is_rgb else 1 - image[:, y, x]
+    image[0, y, x] = comp[0]
+    image[1, y, x] = comp[1]
+    image[2, y, x] = comp[2]
 
-def zero_one_tensor(image, is_rgb, y, x, probability_1 = 0.5):
+def zero_one_tensor_attack(image, is_rgb, y, x, probability_1 = 0.5):
     rnd_number = np.random.uniform(0, 1)
     if is_rgb:
         image[:, y, x] = torch.tensor([[[1], [1], [1]]]) if rnd_number <= probability_1 else torch.tensor([[[0], [0], [0]]])
@@ -75,7 +79,7 @@ def zero_one_tensor(image, is_rgb, y, x, probability_1 = 0.5):
 
     return image
 
-def additive_noise_tensor(image, is_rgb, y, x, mean=0, std=1):
+def additive_noise_tensor_attack(image, is_rgb, y, x, mean=0, std=1):
     noise = np.random.normal(mean, std)
     if is_rgb:
         # TODO check if RGB is normalized
@@ -89,11 +93,11 @@ def attack_tensor_image(image, attack='complementary', k=1):
     channels, height, width = image.shape
     indeces = select_random_pixels(height, width)
     if attack == 'complementary':
-        foo = complementary_tensor
+        foo = complementary_tensor_attack
     elif attack == 'zero_one':
-        foo = zero_one_tensor
+        foo = zero_one_tensor_attack
     elif attack == 'additive_noise':
-        foo = additive_noise_tensor
+        foo = additive_noise_tensor_attack
     else:
         exit(1, 'illegal function')
 
@@ -105,90 +109,8 @@ def attack_tensor_image(image, attack='complementary', k=1):
     plt.imshow(image[0].numpy())
     plt.show()
     return image
-def attack_complementary_pixel(input_image, image_type="grayscale", k=1):
-    """
-    Replaces k-pixels in the image with their complementary color (1-value in the case of grayscale)
-    """
-    # 1,64,64 / 3,64,64
-    plot = True
-    if plot:
-        plt.imshow(input_image[0])
-        plt.show()
 
-    ys = torch.randperm(input_image[0].size(0))
-    xs = torch.randperm(input_image[0].size(1))
-    for i,y in enumerate(ys[:k]):
-        x = xs[i]
-        if image_type == "grayscale":
-            input_image[0][y,x] = 1 - input_image[0][y,x]
-        else:
-            input_image[0][y,x] = complement(input_image[0][y,x])
-
-
-    if plot and image_type == "grayscale":
-        plt.imshow(input_image[0])
-        plt.show()
-    elif plot:
-        i = np.asarray(input_image).T
-        plt.imshow(i)
-        plt.show()
-    return input_image
-
-def attack_0_1_pixel(input_image, image_type="grayscale", k=1, probability_1=0.5):
-    """
-    Replaces k-pixels in the input image with randomly black or white (0,1 for grayscale)
-    Selection of black or white is determined by probability_1, where probability for 0 is 1-probability_1
-    """
-    plot = False
-    if plot:
-        plt.imshow(input_image[0], cmap='gray')
-        plt.show()
-
-    indeces = select_random_pixels(height, width, seed)
-    ys = torch.randperm(input_image[0].size(0))
-    xs = torch.randperm(input_image[0].size(1))
-    for i,y in enumerate(ys[:k]):
-        x = xs[i]
-        rnd_number = np.random.uniform(0,1)
-        if image_type == "grayscale":
-            input_image[0][y,x] = 1 if rnd_number <= probability_1 else 0
-        else:
-            input_image[0][y,x] = (1,1,1) if rnd_number <= probability_1 else (0,0,0)
-
-
-    if plot:
-        plt.imshow(input_image[0], cmap='gray')
-        plt.show()
-    return input_image
-
-def attack_addative_noise_on_pixel(input_image, image_type="grayscale", k=1, mean=0, std=1):
-    """
-    Replaces k-pixels in the input image with randomly black or white (0,1 for grayscale)
-    Selection of black or white is determined by probability_1, where probability for 0 is 1-probability_1
-    """
-    plot = False
-    if plot:
-        plt.imshow(input_image[0], cmap='gray')
-        plt.show()
-
-    indeces = select_random_pixels(height, width, seed)
-    ys = torch.randperm(input_image[0].size(0))
-    xs = torch.randperm(input_image[0].size(1))
-    for i,y in enumerate(ys[:k]):
-        x = xs[i]
-        noise = np.random.normal(mean, std)
-        if image_type == "grayscale":
-            input_image[0][y,x] = np.clip(input_image[0][y,x] + noise, 0, 1)
-        else:
-            #TODO check if RGB is normalized
-            input_image[0][y,x] = np.clip(input_image[0][y,x] + noise, 0, 1)
-
-
-    if plot:
-        plt.imshow(input_image[0], cmap='gray')
-        plt.show()
-    return input_image
-
+"""
 def explicit_pixel_attack_tensor(input_image, attack="complementery", pixel_list=[[30, 30], [32, 32]]):
 
     plot = False
@@ -225,7 +147,7 @@ def explicit_pixel_attack_tensor(input_image, attack="complementery", pixel_list
 
     print(input_image)
     return input_image
-
+"""
 
 
 if __name__ == "__main__":

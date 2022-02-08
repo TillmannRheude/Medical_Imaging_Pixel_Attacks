@@ -1,4 +1,7 @@
 # Sum of the min & max of (a, b, c)
+import torch
+
+
 def hilo(a, b, c):
     if c < b: b, c = c, b
     if b < a: a, b = b, a
