@@ -15,7 +15,7 @@ def draw_figure(canvas, figure):
 
 
 import matplotlib.pyplot as plt
-from attack import attack_complementary_pixel, attack_0_1_pixel, attack_addative_noise_on_pixel, attack_single_image
+from attack import  attack_single_image, gui_call_evaluate_attack
 
 
 def get_borderless_figure(size=(4, 4)):
@@ -72,13 +72,14 @@ image_column_2 = [
 ]
 
 slider = [
-    [sg.Text('Number of Pixels')],
-    [sg.Slider(range=(1, 28 * 28),
+    sg.Text('Number of Pixels'),
+    sg.Slider(range=(1, 28 * 28),
               enable_events=True,
               default_value=10,
               size=(50, 15),
-              orientation='horizontal', key="-SLIDER-")]
+              orientation='horizontal', key="-SLIDER-")
 ]
+
 layout = [
     [
         sg.Column(file_list_column),
@@ -87,9 +88,13 @@ layout = [
         sg.Column(image_column_2),
     ],
     [
-
-        slider,
-        sg.Button("Execute Attack", key='-ATTACKBUTTON-')
+        sg.Column([
+            slider,
+            [sg.Button("Execute Attack", key='-ATTACKBUTTON-')],
+        ]),
+        sg.Column([
+           [sg.Text('', key='-INFOTEXT-')],
+        ])
      ]
 
 
@@ -161,7 +166,19 @@ while True:
         model = values['-MODELS-']
         attack = values['-ATTACKS-']
         num_pixels = values['-SLIDER-']
-        print()
+
+        window['-INFOTEXT-'].update('Loading ...')
+        window.refresh()
+
+        if selected_attack == 'Additive Noise':
+            test_metrics, attack_metrics = gui_call_evaluate_attack(dataset.flag, int(num_pixels), 'additive_noise')
+        elif selected_attack == '0 - 1':
+            test_metrics, attack_metrics = gui_call_evaluate_attack(dataset.flag, int(num_pixels), 'zero_one')
+        elif selected_attack == 'Complementary':
+            test_metrics, attack_metrics = gui_call_evaluate_attack(dataset.flag, int(num_pixels), 'complementary')
+        text = f'Dataset:  acc:{round(test_metrics[0],3)} auc:{round(test_metrics[1],3)}\n' \
+               f'Attacked: acc:{round(attack_metrics[0],3)} auc:{round(attack_metrics[1],3)}\n'
+        window['-INFOTEXT-'].update(text)
 
     elif event == "OK" or event == sg.WIN_CLOSED:
         break

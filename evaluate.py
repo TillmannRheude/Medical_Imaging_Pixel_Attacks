@@ -25,6 +25,9 @@ def evaluate(model, data_loader, split, data_flag, dev="cpu"):
 
             outputs = outputs.to("cpu")
 
+            targets = targets.to(torch.float32)
+            outputs = outputs.softmax(dim=-1)
+            """
             if task == 'multi-label, binary-class':
                 targets = targets.to(torch.float32)
                 outputs = outputs.softmax(dim=-1)
@@ -32,7 +35,7 @@ def evaluate(model, data_loader, split, data_flag, dev="cpu"):
                 targets = targets.squeeze().long()
                 outputs = outputs.softmax(dim=-1)
                 targets = targets.float().resize_(len(targets), 1)
-
+            """
             y_true = torch.cat((y_true, targets), 0)
             y_score = torch.cat((y_score, outputs), 0)
 
@@ -43,6 +46,7 @@ def evaluate(model, data_loader, split, data_flag, dev="cpu"):
         metrics = evaluator.evaluate(y_score)
 
         print('%s  acc: %.3f  auc:%.3f' % (split, *metrics))
+        return metrics
 
 
 def gui_call_evaluate(data_flag, ):
