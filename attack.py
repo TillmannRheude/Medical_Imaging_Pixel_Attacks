@@ -1,11 +1,9 @@
 import os
-from pickle import TRUE
 import numpy as np
 import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
-import random 
 
 from medmnist import INFO
 from models import create_resnet
@@ -66,29 +64,45 @@ def attack_single_image(image, attack, k=1, seed=None):
 """For Evaluation"""
 def complementary_tensor_attack(image, is_rgb, y, x):
     comp = complement(image[:, y, x]) if is_rgb else 1 - image[:, y, x]
-    image[0, y, x] = comp[0]
-    image[1, y, x] = comp[1]
-    image[2, y, x] = comp[2]
+    if is_rgb:
+        image[0, y, x] = comp[0]
+        image[1, y, x] = comp[1]
+        image[2, y, x] = comp[2]
+    else:
+        image[0, y, x] = comp
+
 
 def zero_one_tensor_attack(image, is_rgb, y, x, probability_1 = 0.5):
     rnd_number = np.random.uniform(0, 1)
+    val = 1. if rnd_number <= probability_1 else 0.
     if is_rgb:
-        image[:, y, x] = torch.tensor([[[1], [1], [1]]]) if rnd_number <= probability_1 else torch.tensor([[[0], [0], [0]]])
+        image[0, y, x] = val
+        image[1, y, x] = val
+        image[2, y, x] = val
     else:
-        image[:, y, x] = 1 if rnd_number <= probability_1 else 0
+        image[0, y, x] = val
+
 
     return image
 
-def additive_noise_tensor_attack(image, is_rgb, y, x, mean=0, std=1):
-    noise = np.random.normal(mean, std)
+def additive_noise_tensor_attack(image, is_rgb, y, x, mean=0, std=0.5):
+
     if is_rgb:
-        # TODO check if RGB is normalized
+        noise = np.random.normal(mean, std, 3)
         image[:, y, x] = np.clip(image[:, y, x] + noise, 0, 1)
     else:
+        noise = np.random.normal(mean, std)
         image[:, y, x] = np.clip(image[:, y, x] + noise, 0, 1)
     return image
 
-def attack_tensor_image(image, attack='complementary', k=1):
+def attack_tensor_image(image, attack='zero_one', k=3000):
+    plot_img = False
+    if plot_img:
+        plt.show()
+        a = np.rollaxis(image.detach().numpy(),0,3)
+        plt.imshow(a)
+        plt.show()
+
     # edits image in place!
     channels, height, width = image.shape
     indeces = select_random_pixels(height, width)
@@ -101,12 +115,15 @@ def attack_tensor_image(image, attack='complementary', k=1):
     else:
         exit(1, 'illegal function')
 
+
     is_rgb = channels == 3
     for y, x in indeces[:k]:
         foo(image, is_rgb, y, x)
 
-    plt.imshow(image[0].numpy())
-    plt.show()
+    if plot_img:
+        b = np.rollaxis(image.detach().numpy(), 0,  3)
+        plt.imshow(b)
+        plt.show()
     return image
 
 """
@@ -150,18 +167,18 @@ def explicit_pixel_attack_tensor(input_image, attack="complementery", pixel_list
 
 
 if __name__ == "__main__":
-    MONTE_CARLO = True
-    DATA_AUGMENTATION = True
+    MONTE_CARLO = False
+    DATA_AUGMENTATION = False
 
     ## load model
-    data_flag = 'bloodmnist'
+    data_flag = 'octmnist'
     info = INFO[data_flag]
     task = info['task']
     n_channels = info['n_channels']
     n_classes = len(info['label'])
 
     download = True
-    num_workers = 2
+    num_workers = 4
     NUM_EPOCHS = 1
     BATCH_SIZE = 64
     lr = 0.001
@@ -172,7 +189,8 @@ if __name__ == "__main__":
         dev = "cpu"
 
     device = torch.device(dev)
-
+    print("Cuda available", torch.cuda.is_available())
+    print("Cuda device used:", dev)
 
     data_transform = transforms.Compose([
         transforms.Resize(64),
@@ -188,12 +206,8 @@ if __name__ == "__main__":
 
     PATH = os.path.join(os.path.abspath(os.getcwd()), 'trained_models/resnet18_' + data_flag + '.pth')
 
-    if DATA_AUGMENTATION: 
-        dataset = load_mnist(data_flag, BATCH_SIZE, download, num_workers, data_transform, data_aug = True)
-        dataset_attack = load_mnist(data_flag, BATCH_SIZE, download, num_workers, attack_transform, data_aug = True)
-    else: 
-        dataset = load_mnist(data_flag, BATCH_SIZE, download, num_workers, data_transform)
-        dataset_attack = load_mnist(data_flag, BATCH_SIZE, download, num_workers, attack_transform)
+    dataset = load_mnist(data_flag, BATCH_SIZE, download, num_workers, data_transform, data_aug=DATA_AUGMENTATION)
+    dataset_attack = load_mnist(data_flag, BATCH_SIZE, download, num_workers, attack_transform, data_aug=DATA_AUGMENTATION)
 
     attack_loader = dataset_attack["test_loader"]
     test_loader = dataset["test_loader"]
@@ -207,7 +221,7 @@ if __name__ == "__main__":
                 m.p = 0.3
 
     model.to(dev)
-    model.load_state_dict(torch.load(PATH))
+    model.load_state_dict(torch.load(PATH, map_location=device))
 
     print("Attack Evaluation:")
     evaluate(model, attack_loader, "test", data_flag, dev=dev)

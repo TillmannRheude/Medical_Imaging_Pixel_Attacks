@@ -21,7 +21,7 @@ def evaluate(model, data_loader, split, data_flag, dev="cpu"):
         for inputs, targets in data_loader:
             inputs = inputs.to(dev)
 
-            outputs = model(inputs)
+            outputs = model(inputs.float())
 
             outputs = outputs.to("cpu")
 

@@ -6,7 +6,7 @@ from medmnist import INFO
 
 from .random_pixels import AddRandomGaussianNoise, RandomGaussianBlur
 
-def get_mnist_dataset(data_flag, test=False, download=True, data_transform=None, data_aug = False):
+def get_mnist_dataset(data_flag, test=False, download=True, data_transform=None, data_aug=False, p_aug=0.25):
 
     info = INFO[data_flag]
     task = info['task']
@@ -21,22 +21,18 @@ def get_mnist_dataset(data_flag, test=False, download=True, data_transform=None,
             transforms.Normalize(mean=[.5], std=[.5])
         ])
     if data_aug: 
-        data_transform.transforms.insert(2, RandomGaussianBlur())
-        data_transform.transforms.insert(2, AddRandomGaussianNoise())
+        data_transform.transforms.insert(2, transforms.RandomApply([AddRandomGaussianNoise()], p=p_aug))
+        data_transform.transforms.insert(2, transforms.RandomApply([RandomGaussianBlur(kernel_size=5)], p=p_aug))
+
 
     DataClass = getattr(medmnist, info['python_class'])
     return DataClass(split='test' if test else 'train', transform=data_transform, download=download)
 
 
-def load_mnist(data_flag="octmnist", BATCH_SIZE=128, download=True, num_workers=4, data_transform=None, data_aug = False):
+def load_mnist(data_flag="octmnist", BATCH_SIZE=128, download=True, num_workers=4, data_transform=None, data_aug=False):
     # load the data
-    if data_aug:
-        train_dataset = get_mnist_dataset(data_flag, download=download, data_transform=data_transform, data_aug = True)
-        test_dataset = get_mnist_dataset(data_flag, test=True, download=download, data_transform=data_transform, data_aug = True)
-    else: 
-        train_dataset = get_mnist_dataset(data_flag, download=download, data_transform=data_transform)
-        test_dataset = get_mnist_dataset(data_flag, test=True, download=download, data_transform=data_transform)
-
+    train_dataset = get_mnist_dataset(data_flag, download=download, data_transform=data_transform, data_aug=data_aug)
+    test_dataset = get_mnist_dataset(data_flag, test=True, download=download, data_transform=data_transform, data_aug=data_aug)
 
     # encapsulate data into dataloader form
     train_loader = data.DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=num_workers)
