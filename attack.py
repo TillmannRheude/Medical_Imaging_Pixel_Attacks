@@ -128,17 +128,16 @@ def attack_tensor_image(image, attack='zero_one', k=3000):
         plt.show()
     return image
 
-"""
-def explicit_pixel_attack_tensor(input_image, attack="complementery", pixel_list=[[30, 30], [32, 32]]):
+
+def explicit_pixel_attack_tensor(input_image, attack="zero_one", pixel_list=[[30, 30], [32, 32]]):
 
     plot = False
     if plot:
         plt.imshow(input_image[0], cmap='gray')
         plt.show()
 
-    image = image.copy()
-    if len(image.shape) == 3:
-        height, width, channels = image.shape
+    if len(input_image.shape) == 3:
+        height, width, channels = input_image.shape
     else:
         height, width = image.shape
         channels = 1
@@ -149,23 +148,15 @@ def explicit_pixel_attack_tensor(input_image, attack="complementery", pixel_list
             input_image[0][idx] = 1 - input_image[0][idx]
     elif attack == "zero_one":
         for idx in pixel_list:
-            input_image = zero_one_tensor(input_image, is_rgb, idx[0], idx[1])
+            input_image = zero_one_tensor_attack(input_image, is_rgb, idx[0], idx[1])
     elif attack == "additive_noise":
         for idx in pixel_list:
-            input_image = additive_noise_tensor(input_image, is_rgb, idx[0], idx[1])
+            input_image = additive_noise_tensor_attack(input_image, is_rgb, idx[0], idx[1])
     else:
         exit(1, 'illegal function')
 
-    if plot:
-        plt.imshow(input_image[0], cmap='gray')
-        plt.show()
-        foo = additive_noise
-    else:
-        exit(1, 'illegal function')
-
-    print(input_image)
     return input_image
-"""
+
 
 def gui_call_evaluate_attack(data_flag, num_pixels, attack):
     info = INFO[data_flag]
