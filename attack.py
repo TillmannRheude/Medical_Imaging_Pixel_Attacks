@@ -97,7 +97,7 @@ def additive_noise_tensor_attack(image, is_rgb, y, x, mean=0, std=0.5):
         image[:, y, x] = np.clip(image[:, y, x] + noise, 0, 1)
     return image
 
-def attack_tensor_image(image, attack='zero_one', k=3000):
+def attack_tensor_image(image, attack='zero_one', k=3000, seed=None):
     plot_img = False
     if plot_img:
         plt.show()
@@ -107,7 +107,7 @@ def attack_tensor_image(image, attack='zero_one', k=3000):
 
     # edits image in place!
     channels, height, width = image.shape
-    indeces = select_random_pixels(height, width)
+    indeces = select_random_pixels(height, width, seed)
     if attack == 'complementary':
         foo = complementary_tensor_attack
     elif attack == 'zero_one':
@@ -129,31 +129,30 @@ def attack_tensor_image(image, attack='zero_one', k=3000):
     return image
 
 
-def explicit_pixel_attack_tensor(input_image, attack="zero_one", pixel_list=[[30, 30], [32, 32]]):
-
-    plot = False
-    if plot:
-        plt.imshow(input_image[0], cmap='gray')
+def explicit_pixel_attack_tensor(input_image, attack, pixel_list, seed=None):
+    plot_img = False
+    if plot_img:
+        b = np.rollaxis(input_image.detach().numpy(), 0, 3)
+        plt.imshow(b)
         plt.show()
-
-    if len(input_image.shape) == 3:
-        height, width, channels = input_image.shape
-    else:
-        height, width = image.shape
-        channels = 1
-
-    is_rgb = channels == 3
-    if attack == "complementary":
-        for idx in pixel_list:
-            input_image[0][idx] = 1 - input_image[0][idx]
-    elif attack == "zero_one":
-        for idx in pixel_list:
-            input_image = zero_one_tensor_attack(input_image, is_rgb, idx[0], idx[1])
-    elif attack == "additive_noise":
-        for idx in pixel_list:
-            input_image = additive_noise_tensor_attack(input_image, is_rgb, idx[0], idx[1])
+    channels, height, width = input_image.shape
+    indeces = select_random_pixels(height, width, seed)
+    if attack == 'complementary':
+        foo = complementary_tensor_attack
+    elif attack == 'zero_one':
+        foo = zero_one_tensor_attack
+    elif attack == 'additive_noise':
+        foo = additive_noise_tensor_attack
     else:
         exit(1, 'illegal function')
+
+    is_rgb = channels == 3
+    for y,x in pixel_list:
+        foo(input_image, is_rgb, y, x)
+    if plot_img:
+        b = np.rollaxis(input_image.detach().numpy(), 0, 3)
+        plt.imshow(b)
+        plt.show()
 
     return input_image
 
@@ -252,7 +251,7 @@ if __name__ == "__main__":
     attack_loader = dataset_attack["test_loader"]
     test_loader = dataset["test_loader"]
 
-    model = create_resnet(data_flag)
+    model = create_resnet(data_flag, dropout=MONTE_CARLO)
     model.to(dev)
     model.load_state_dict(torch.load(PATH, map_location=device))
 
