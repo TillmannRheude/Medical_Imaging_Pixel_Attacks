@@ -203,11 +203,12 @@ if __name__ == "__main__":
 
 
     experiment_location_vs_error(28, "resnet18_octmnist_dataaug", 'zero_one')
-    experiment_location_vs_error(28, "resnet18_octmnist_dataaug", 'complementary')
-    experiment_location_vs_error(28, "resnet18_octmnist_dataaug", 'additive_noise')
-
     experiment_location_vs_error(28, "resnet18_octmnist_mcdropout", 'zero_one')
+
+    experiment_location_vs_error(28, "resnet18_octmnist_dataaug", 'complementary')
     experiment_location_vs_error(28, "resnet18_octmnist_mcdropout", 'complementary')
+
+    experiment_location_vs_error(28, "resnet18_octmnist_dataaug", 'additive_noise')
     experiment_location_vs_error(28, "resnet18_octmnist_mcdropout", 'additive_noise')
 
     exit()
