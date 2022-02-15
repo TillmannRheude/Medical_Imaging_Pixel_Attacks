@@ -81,7 +81,7 @@ def experiment_location_vs_error(size, data_flag, attack_func):
     print('************************************************')
     print(f"Starting experiment: {data_flag}_{attack_func}")
     print('************************************************')
-    map = np.zeros((size,size))
+    map = np.zeros((2, size,size))
     num_pixels = size * size
     for y, row in enumerate(map):
         for x, value in enumerate(row):
@@ -92,8 +92,9 @@ def experiment_location_vs_error(size, data_flag, attack_func):
 
             model, loader, dev = create_attacked_dataset(attack_function, size, data_flag=data_flag)
 
-            _, acc = evaluate(model, loader, "test", data_flag.split("_")[1], dev=dev)
-            map[y,x] = acc
+            auc, acc = evaluate(model, loader, "test", data_flag.split("_")[1], dev=dev)
+            map[0,y,x] = auc
+            map[1,y,x] = acc
 
     raw = f'location_acc_experiments_raw/{data_flag}_{attack_func}.pth'
     dump_raw(raw, map)

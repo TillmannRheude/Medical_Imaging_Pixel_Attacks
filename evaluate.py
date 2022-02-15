@@ -45,7 +45,7 @@ def evaluate(model, data_loader, split, data_flag, dev="cpu"):
         evaluator = Evaluator(data_flag, split)
         metrics = evaluator.evaluate(y_score)
 
-        #print('%s  acc: %.3f  auc:%.3f' % (split, *metrics))
+        print('%s  acc: %.3f  auc:%.3f' % (split, *metrics))
         return metrics
 
 
