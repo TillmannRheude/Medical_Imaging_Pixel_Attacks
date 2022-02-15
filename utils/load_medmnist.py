@@ -7,7 +7,7 @@ from medmnist import INFO
 
 from .random_pixels import AddRandomGaussianNoise, RandomGaussianBlur
 
-def get_mnist_dataset(data_flag, test=False, download=True, data_transform=None, data_aug=False, p_aug=0.25):
+def get_mnist_dataset(data_flag, test=False, download=True, data_transform=None, data_aug=False, p_aug=0.25, image_size=64):
 
     info = INFO[data_flag]
     task = info['task']
@@ -17,7 +17,7 @@ def get_mnist_dataset(data_flag, test=False, download=True, data_transform=None,
     # preprocessing
     if not data_transform:
         data_transform = transforms.Compose([
-            transforms.Resize(64),
+            transforms.Resize(image_size),
             transforms.ToTensor(),
             transforms.Normalize(mean=[.5], std=[.5])
         ])

@@ -157,7 +157,7 @@ def explicit_pixel_attack_tensor(input_image, attack, pixel_list, seed=None):
     return input_image
 
 
-def gui_call_evaluate_attack(data_flag, num_pixels, attack):
+def gui_call_evaluate_attack(model_name, data_flag, num_pixels, attack, mc=False):
     info = INFO[data_flag]
 
     download = True
@@ -187,7 +187,7 @@ def gui_call_evaluate_attack(data_flag, num_pixels, attack):
         transforms.Normalize(mean=[0.5], std=[0.5])
     ])
 
-    PATH = os.path.join(os.path.abspath(os.getcwd()), 'trained_models/resnet18_' + data_flag + '.pth')
+    PATH = os.path.join(os.path.abspath(os.getcwd()), 'trained_models/' + model_name + '.pth')
 
     dataset = load_mnist(data_flag, BATCH_SIZE, download, num_workers, data_transform )
     dataset_attack = load_mnist(data_flag, BATCH_SIZE, download, num_workers, attack_transform,)
@@ -195,7 +195,7 @@ def gui_call_evaluate_attack(data_flag, num_pixels, attack):
     attack_loader = dataset_attack["test_loader"]
     test_loader = dataset["test_loader"]
 
-    model = create_resnet(data_flag)
+    model = create_resnet(data_flag,  dropout=mc)
     model.to(dev)
     model.load_state_dict(torch.load(PATH, map_location=device))
 

@@ -112,6 +112,7 @@ selected_attack = None
 fig, ax = get_borderless_figure()
 image = None
 k = 10
+mc = False
 
 
 def attack_change():
@@ -144,9 +145,19 @@ while True:
 
     if event == '-MODELS-':
         trained_model_name = values[event][0]
-        model, dataset = trained_model_name.split('_')
-        print(model, dataset)
-        dataset = get_mnist_dataset(dataset)
+
+        s = trained_model_name.split('_')
+
+        model, dataset = s[0], s[1]
+        if len(s) > 2:
+            if s[2].endswith('mcdropout'):
+                mc = True
+            else:
+                mc = False
+        else: mc = False
+
+
+        dataset = get_mnist_dataset(dataset, 28)
         image = dataset.imgs[0] / 255.0
         image_change()
 
@@ -169,15 +180,18 @@ while True:
 
         window['-INFOTEXT-'].update('Loading ...')
         window.refresh()
+        print('-----------------------------')
+        print(model, dataset, mc)
+        print('-----------------------------')
 
         if selected_attack == 'Additive Noise':
-            test_metrics, attack_metrics = gui_call_evaluate_attack(dataset.flag, int(num_pixels), 'additive_noise')
+            test_metrics, attack_metrics = gui_call_evaluate_attack(trained_model_name, dataset.flag, int(num_pixels), 'additive_noise', mc=mc)
         elif selected_attack == '0 - 1':
-            test_metrics, attack_metrics = gui_call_evaluate_attack(dataset.flag, int(num_pixels), 'zero_one')
+            test_metrics, attack_metrics = gui_call_evaluate_attack(trained_model_name, dataset.flag, int(num_pixels), 'zero_one', mc=mc)
         elif selected_attack == 'Complementary':
-            test_metrics, attack_metrics = gui_call_evaluate_attack(dataset.flag, int(num_pixels), 'complementary')
-        text = f'Original: acc:{round(test_metrics[0],3)} auc:{round(test_metrics[1],3)}\n\n' \
-               f'Attacked: acc:{round(attack_metrics[0],3)} auc:{round(attack_metrics[1],3)}'
+            test_metrics, attack_metrics = gui_call_evaluate_attack(trained_model_name, dataset.flag, int(num_pixels), 'complementary', mc=mc)
+        text = f'Original: acc: {round(test_metrics[1],3)} auc: {round(test_metrics[0],3)}\n\n' \
+               f'Attacked: acc: {round(attack_metrics[1],3)} auc: {round(attack_metrics[0],3)}'
         window['-INFOTEXT-'].update(text)
 
     elif event == "OK" or event == sg.WIN_CLOSED:
