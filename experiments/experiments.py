@@ -18,7 +18,8 @@ def dump_raw(filepath, data):
 
 def load_raw(filepath):
     with open(filepath, 'rb') as f:
-        return pickle.load(f)
+        data = pickle.loads(f.read())
+    return data
 
 from attack import attack_tensor_image, explicit_pixel_attack_tensor
 
@@ -117,7 +118,7 @@ def experiment_count_vs_error( data_flag, attack_func, size=28):
         metrics = evaluate(model, loader, "test", data_flag.split("_")[1], dev=dev)
         results[k] = metrics
     raw = f'count_error_experiments_raw/{data_flag}_{attack_func}.pth'
-    dump_raw(raw, map)
+    dump_raw(raw, results)
     return results
 
 
@@ -196,7 +197,42 @@ def experiment_count_vs_error_old(count, step, attack_func, data_flag, mc=False)
 
 if __name__ == "__main__":
     print("start experiment")
+    experiment_count_vs_error("resnet18_octmnist", 'zero_one')
+    experiment_count_vs_error("resnet18_octmnist", 'complementary')
+    experiment_count_vs_error("resnet18_octmnist", 'additive_noise')
 
+    experiment_count_vs_error("resnet18_octmnist_dataaug", 'zero_one')
+
+    experiment_count_vs_error("resnet18_octmnist_mcdropout", 'zero_one')
+
+    experiment_count_vs_error("resnet18_octmnist_dataaug", 'complementary')
+    experiment_count_vs_error("resnet18_octmnist_dataaug", 'additive_noise')
+
+    experiment_count_vs_error("resnet18_octmnist_mcdropout", 'complementary')
+    experiment_count_vs_error("resnet18_octmnist_mcdropout", 'additive_noise')
+
+    experiment_count_vs_error("resnet18_tissuemnist", 'zero_one')
+    experiment_count_vs_error("resnet18_tissuemnist", 'complementary')
+    experiment_count_vs_error("resnet18_tissuemnist", 'additive_noise')
+
+    experiment_count_vs_error("resnet18_bloodmnist", 'zero_one')
+    experiment_count_vs_error("resnet18_bloodmnist", 'complementary')
+    experiment_count_vs_error("resnet18_bloodmnist", 'additive_noise')
+
+    experiment_count_vs_error("resnet18_breastmnist", 'zero_one')
+    experiment_count_vs_error("resnet18_breastmnist", 'complementary')
+    experiment_count_vs_error("resnet18_breastmnist", 'additive_noise')
+
+    experiment_count_vs_error("resnet18_retinamnist", 'zero_one')
+    experiment_count_vs_error("resnet18_retinamnist", 'complementary')
+    experiment_count_vs_error("resnet18_retinamnist", 'additive_noise')
+
+    experiment_count_vs_error("resnet18_tissuemnist", 'zero_one')
+    experiment_count_vs_error("resnet18_tissuemnist", 'complementary')
+    experiment_count_vs_error("resnet18_tissuemnist", 'additive_noise')
+
+
+    exit()
     #experiment_location_vs_error(28, "resnet18_octmnist", 'zero_one')
     #experiment_location_vs_error(28, "resnet18_octmnist", 'complementary')
     experiment_location_vs_error(28, "resnet18_octmnist", 'additive_noise')
@@ -214,8 +250,6 @@ if __name__ == "__main__":
     exit()
 
 
-    experiment_count_vs_error("resnet18_octmnist_mcdropout", "complementary")
-    exit()
     experiment_location_vs_error(16, "resnet18_octmnist_mcdropout", mc=True)
 
     #experiment_location_vs_error(16, "resnet18_octmnist")
